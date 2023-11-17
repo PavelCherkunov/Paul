@@ -1,0 +1,35 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+#include <QPainter>
+#include <QTime>
+#include <QTimer>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QDateTime>
+#include <QGridLayout>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
+
+private:
+    Ui::MainWindow *ui;
+    QLabel *lbl;
+    QTimer *Timer;
+    int Time;
+
+protected:
+    void paintEvent(QPaintEvent *) override;
+};
+#endif // MAINWINDOW_H
