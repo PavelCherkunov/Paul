@@ -12,11 +12,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     QGridLayout *gridLayout = new QGridLayout(centralWidget);
 
-    Time = 0;
-    Timer = new QTimer(this);
-    connect(Timer, SIGNAL(timeout()), this, SLOT(TimerSlot()));
-    Timer->start(1);
-
     setWindowTitle("ЧАСЫ");
     QTimer *timer = new QTimer;
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
