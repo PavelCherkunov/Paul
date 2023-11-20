@@ -25,11 +25,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QLabel *lbl;
-    QTimer *Timer;
-    int Time;
-
+    
 protected:
     void paintEvent(QPaintEvent *) override;
+
 };
 #endif // MAINWINDOW_H
