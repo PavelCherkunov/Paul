@@ -12,22 +12,23 @@ MainWindow::MainWindow(QWidget *parent)
 
     QGridLayout *gridLayout = new QGridLayout(centralWidget);
 
-    Time = 0;
-    Timer = new QTimer(this);
-    connect(Timer, SIGNAL(timeout()), this, SLOT(TimerSlot()));
-    Timer->start(1);
-
     setWindowTitle("ЧАСЫ");
-    QTimer *timer = new QTimer;
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(1000);
 
 
+    QTimer *clock_timer = new QTimer;
+    //connect(clock_timer, &QTimer::timeout, time, &QWidget::update);
+    connect(clock_timer, SIGNAL(timeout()), this, SLOT(update()));
+    clock_timer->start(1000);// К часам
+
+    QTime time(0, 0, 0);
+
+    QTimer *stopwatch_timer = new QTimer;
+    connect(stopwatch_timer, &QTimer::timeout, this, &QTime::currentTime);// К секундомеру
 
     // Создаем метку для отображения времени
-    QLabel *Label = new QLabel("00:00:00");
-    Label->setStyleSheet("font-size: 48pt;");
-    gridLayout->addWidget(Label, 0, 0);
+    QLabel *stopwatch_label = new QLabel("00:00:00");
+    stopwatch_label->setStyleSheet("font-size: 48pt;");
+    gridLayout->addWidget(stopwatch_label, 0, 0);
 
     // Создаем кнопки "Старт", "Стоп" и "Сброс"
     QPushButton *startButton = new QPushButton("Старт");
@@ -37,65 +38,54 @@ MainWindow::MainWindow(QWidget *parent)
     QPushButton *resetButton = new QPushButton("Сброс");
     resetButton->setFixedSize(100, 50);
 
-    // Создаем таймер
-    QTimer *Timer1 = new QTimer;
-    QTime time(0, 0, 0);
-
     // Подключаем слот для обновления времени
-    QObject::connect(Timer1, &QTimer::timeout, [=, &time]()
+    QObject::connect(stopwatch_timer, &QTimer::timeout, [=, &time]()
      {
          time = time.addSecs(1);
-         Label->setText(time.toString("hh:mm:ss"));
+         stopwatch_label->setText(time.toString("hh:mm:ss"));
      });
 
     // Обработчик нажатия на кнопку "Старт"
     QObject::connect(startButton, &QPushButton::clicked, [=, &time]()
      {
-        if (!Timer1->isActive())
+        if (!stopwatch_timer->isActive())
          {
-             Timer1->start(1000); // Запускаем таймер
+             stopwatch_timer->start(1000); // Запускаем таймер
          }
      });
 
     // Обработчик нажатия на кнопку "Стоп"
     QObject::connect(stopButton, &QPushButton::clicked, [=, &time]()
      {
-         Timer1->stop(); // Остановка таймера
+         stopwatch_timer->stop(); // Остановка таймера
      });
 
     // Обработчик нажатия на кнопку "Сброс"
     QObject::connect(resetButton, &QPushButton::clicked, [=, &time]()
      {
-         Timer1->stop();
+         stopwatch_timer->stop();
          time.setHMS(0, 0, 0);
-         Label->setText(time.toString("hh:mm:ss"));
+         stopwatch_label->setText(time.toString("hh:mm:ss"));
      });
 
     // Размещаем виджеты на форме
-    gridLayout->addWidget(Label);
+    gridLayout->addWidget(stopwatch_label);
     gridLayout->addWidget(startButton);
     gridLayout->addWidget(stopButton);
     gridLayout->addWidget(resetButton);
 
     // Создаем метку для отображения времени
-    QLabel *label = new QLabel;
-    label->setStyleSheet("font-size: 48pt;");
-    gridLayout->addWidget(label, 0, 0);
-
-
-    // Создаем таймер для обновления времени
-    QTimer *Timer = new QTimer;
-    Timer->start(1000); // Обновлять каждую секунду
+    QLabel *clock_label = new QLabel;
+    clock_label->setStyleSheet("font-size: 48pt;");
+    gridLayout->addWidget(clock_label, 0, 0);
 
     // Подключаем слот для обновления времени
-    QObject::connect(Timer, &QTimer::timeout, [=]() {
-        label->setText(QDateTime::currentDateTime().toString("hh:mm:ss"));
+    QObject::connect(clock_timer, &QTimer::timeout, [=]() {
+        clock_label->setText(QDateTime::currentDateTime().toString("hh:mm:ss"));
     });
 
     // Размещаем метку на форме
-    QVBoxLayout *layout = new QVBoxLayout;
-    gridLayout->addWidget(label);
-
+    gridLayout->addWidget(clock_label);
 }
 
 MainWindow::~MainWindow()
@@ -107,6 +97,9 @@ void MainWindow::paintEvent(QPaintEvent *)
 {
     QTime time = QTime::currentTime();
     QPainter painter;
+    QColor red(255, 0, 0);
+    QColor green(0, 255, 0, 191);
+    QColor blue(0, 0, 255, 220);
 
     painter.begin(this);
 
@@ -136,32 +129,33 @@ void MainWindow::paintEvent(QPaintEvent *)
 
     //часовая стрелка
     painter.save();
-    QPolygon polygon1;
-    polygon1 << QPoint(-0.05*r, 0) << QPoint(0.05*r, 0) << QPoint(0, -0.5*r);
-    painter.setBrush(QColor(12, 34, 56));
+    QPolygon hour_polygon;
+    hour_polygon << QPoint(-0.05*r, 0) << QPoint(0.05*r, 0) << QPoint(0, -0.5*r);
+    painter.setBrush(red);
     painter.rotate(30 * (time.hour() + time.minute()/60));
-    painter.drawPolygon(polygon1);
+    painter.drawPolygon(hour_polygon);
     painter.restore();
 
     //минутная стрелка
     painter.save();
-    QPolygon polygon2;
-    polygon2 << QPoint(-0.05*r, 0) << QPoint(0.05*r, 0) << QPoint(0, -0.8*r);
-    painter.setBrush(QColor(78, 90, 12, 191));
+    QPolygon minute_polygon;
+    minute_polygon << QPoint(-0.05*r, 0) << QPoint(0.05*r, 0) << QPoint(0, -0.8*r);
+    painter.setBrush(green);
     painter.rotate(6.0 * (time.minute() + time.second()/60));
-    painter.drawPolygon(polygon2);
+    painter.drawPolygon(minute_polygon);
     painter.restore();
 
     //секундная стрелка
     painter.save();
-    QPolygon polygon3;
-    polygon3 << QPoint(-0.02*r, 0) << QPoint(0.02*r, 0) << QPoint(0, -0.8*r);
-    painter.setBrush(QColor(16, 03, 02, 220));
+    QPolygon second_polygon;
+    second_polygon << QPoint(-0.02*r, 0) << QPoint(0.02*r, 0) << QPoint(0, -0.8*r);
+    painter.setBrush(blue);
     painter.rotate(6.0 * time.second());
-    painter.drawPolygon(polygon3);
+    painter.drawPolygon(second_polygon);
     painter.restore();
 
     painter.end();
 }
+
 
 
